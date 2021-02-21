@@ -65,6 +65,8 @@ type ReactionCollector struct {
 type DBShow struct{
 	MalID int
 	Title string
+	ImageURL string
+	AlreadySent bool
 }
 // Database the users database
 type Database map[string][]*DBShow
@@ -90,4 +92,263 @@ type Show struct {
 		Rated     string    `json:"rated"`
 	} `json:"results"`
 	LastPage int `json:"last_page"`
+}
+
+// AnimeSchedule currently airing anime schedule
+type AnimeSchedule struct {
+	RequestHash        string `json:"request_hash"`
+	RequestCached      bool   `json:"request_cached"`
+	RequestCacheExpiry int    `json:"request_cache_expiry"`
+	Monday             []struct {
+		MalID       int       `json:"mal_id"`
+		URL         string    `json:"url"`
+		Title       string    `json:"title"`
+		ImageURL    string    `json:"image_url"`
+		Synopsis    string    `json:"synopsis"`
+		Type        string    `json:"type"`
+		AiringStart time.Time `json:"airing_start"`
+		Episodes    int       `json:"episodes"`
+		Members     int       `json:"members"`
+		Genres      []struct {
+			MalID int    `json:"mal_id"`
+			Type  string `json:"type"`
+			Name  string `json:"name"`
+			URL   string `json:"url"`
+		} `json:"genres"`
+		Source    string `json:"source"`
+		Producers []struct {
+			MalID int    `json:"mal_id"`
+			Type  string `json:"type"`
+			Name  string `json:"name"`
+			URL   string `json:"url"`
+		} `json:"producers"`
+		Score     float64  `json:"score"`
+		Licensors []string `json:"licensors"`
+		R18       bool     `json:"r18"`
+		Kids      bool     `json:"kids"`
+	} `json:"monday"`
+	Tuesday []struct {
+		MalID       int       `json:"mal_id"`
+		URL         string    `json:"url"`
+		Title       string    `json:"title"`
+		ImageURL    string    `json:"image_url"`
+		Synopsis    string    `json:"synopsis"`
+		Type        string    `json:"type"`
+		AiringStart time.Time `json:"airing_start"`
+		Episodes    int       `json:"episodes"`
+		Members     int       `json:"members"`
+		Genres      []struct {
+			MalID int    `json:"mal_id"`
+			Type  string `json:"type"`
+			Name  string `json:"name"`
+			URL   string `json:"url"`
+		} `json:"genres"`
+		Source    string `json:"source"`
+		Producers []struct {
+			MalID int    `json:"mal_id"`
+			Type  string `json:"type"`
+			Name  string `json:"name"`
+			URL   string `json:"url"`
+		} `json:"producers"`
+		Score     float64  `json:"score"`
+		Licensors []string `json:"licensors"`
+		R18       bool     `json:"r18"`
+		Kids      bool     `json:"kids"`
+	} `json:"tuesday"`
+	Wednesday []struct {
+		MalID       int       `json:"mal_id"`
+		URL         string    `json:"url"`
+		Title       string    `json:"title"`
+		ImageURL    string    `json:"image_url"`
+		Synopsis    string    `json:"synopsis"`
+		Type        string    `json:"type"`
+		AiringStart time.Time `json:"airing_start"`
+		Episodes    int       `json:"episodes"`
+		Members     int       `json:"members"`
+		Genres      []struct {
+			MalID int    `json:"mal_id"`
+			Type  string `json:"type"`
+			Name  string `json:"name"`
+			URL   string `json:"url"`
+		} `json:"genres"`
+		Source    string `json:"source"`
+		Producers []struct {
+			MalID int    `json:"mal_id"`
+			Type  string `json:"type"`
+			Name  string `json:"name"`
+			URL   string `json:"url"`
+		} `json:"producers"`
+		Score     float64       `json:"score"`
+		Licensors []interface{} `json:"licensors"`
+		R18       bool          `json:"r18"`
+		Kids      bool          `json:"kids"`
+	} `json:"wednesday"`
+	Thursday []struct {
+		MalID       int       `json:"mal_id"`
+		URL         string    `json:"url"`
+		Title       string    `json:"title"`
+		ImageURL    string    `json:"image_url"`
+		Synopsis    string    `json:"synopsis"`
+		Type        string    `json:"type"`
+		AiringStart time.Time `json:"airing_start"`
+		Episodes    int       `json:"episodes"`
+		Members     int       `json:"members"`
+		Genres      []struct {
+			MalID int    `json:"mal_id"`
+			Type  string `json:"type"`
+			Name  string `json:"name"`
+			URL   string `json:"url"`
+		} `json:"genres"`
+		Source    string `json:"source"`
+		Producers []struct {
+			MalID int    `json:"mal_id"`
+			Type  string `json:"type"`
+			Name  string `json:"name"`
+			URL   string `json:"url"`
+		} `json:"producers"`
+		Score     float64  `json:"score"`
+		Licensors []string `json:"licensors"`
+		R18       bool     `json:"r18"`
+		Kids      bool     `json:"kids"`
+	} `json:"thursday"`
+	Friday []struct {
+		MalID       int       `json:"mal_id"`
+		URL         string    `json:"url"`
+		Title       string    `json:"title"`
+		ImageURL    string    `json:"image_url"`
+		Synopsis    string    `json:"synopsis"`
+		Type        string    `json:"type"`
+		AiringStart time.Time `json:"airing_start"`
+		Episodes    int       `json:"episodes"`
+		Members     int       `json:"members"`
+		Genres      []struct {
+			MalID int    `json:"mal_id"`
+			Type  string `json:"type"`
+			Name  string `json:"name"`
+			URL   string `json:"url"`
+		} `json:"genres"`
+		Source    string `json:"source"`
+		Producers []struct {
+			MalID int    `json:"mal_id"`
+			Type  string `json:"type"`
+			Name  string `json:"name"`
+			URL   string `json:"url"`
+		} `json:"producers"`
+		Score     float64  `json:"score"`
+		Licensors []string `json:"licensors"`
+		R18       bool     `json:"r18"`
+		Kids      bool     `json:"kids"`
+	} `json:"friday"`
+	Saturday []struct {
+		MalID       int       `json:"mal_id"`
+		URL         string    `json:"url"`
+		Title       string    `json:"title"`
+		ImageURL    string    `json:"image_url"`
+		Synopsis    string    `json:"synopsis"`
+		Type        string    `json:"type"`
+		AiringStart time.Time `json:"airing_start"`
+		Episodes    int       `json:"episodes"`
+		Members     int       `json:"members"`
+		Genres      []struct {
+			MalID int    `json:"mal_id"`
+			Type  string `json:"type"`
+			Name  string `json:"name"`
+			URL   string `json:"url"`
+		} `json:"genres"`
+		Source    string `json:"source"`
+		Producers []struct {
+			MalID int    `json:"mal_id"`
+			Type  string `json:"type"`
+			Name  string `json:"name"`
+			URL   string `json:"url"`
+		} `json:"producers"`
+		Score     float64       `json:"score"`
+		Licensors []interface{} `json:"licensors"`
+		R18       bool          `json:"r18"`
+		Kids      bool          `json:"kids"`
+	} `json:"saturday"`
+	Sunday []struct {
+		MalID       int         `json:"mal_id"`
+		URL         string      `json:"url"`
+		Title       string      `json:"title"`
+		ImageURL    string      `json:"image_url"`
+		Synopsis    string      `json:"synopsis"`
+		Type        string      `json:"type"`
+		AiringStart time.Time   `json:"airing_start"`
+		Episodes    interface{} `json:"episodes"`
+		Members     int         `json:"members"`
+		Genres      []struct {
+			MalID int    `json:"mal_id"`
+			Type  string `json:"type"`
+			Name  string `json:"name"`
+			URL   string `json:"url"`
+		} `json:"genres"`
+		Source    string `json:"source"`
+		Producers []struct {
+			MalID int    `json:"mal_id"`
+			Type  string `json:"type"`
+			Name  string `json:"name"`
+			URL   string `json:"url"`
+		} `json:"producers"`
+		Score     float64  `json:"score"`
+		Licensors []string `json:"licensors"`
+		R18       bool     `json:"r18"`
+		Kids      bool     `json:"kids"`
+	} `json:"sunday"`
+	Other []struct {
+		MalID       int         `json:"mal_id"`
+		URL         string      `json:"url"`
+		Title       string      `json:"title"`
+		ImageURL    string      `json:"image_url"`
+		Synopsis    string      `json:"synopsis"`
+		Type        string      `json:"type"`
+		AiringStart time.Time   `json:"airing_start"`
+		Episodes    interface{} `json:"episodes"`
+		Members     int         `json:"members"`
+		Genres      []struct {
+			MalID int    `json:"mal_id"`
+			Type  string `json:"type"`
+			Name  string `json:"name"`
+			URL   string `json:"url"`
+		} `json:"genres"`
+		Source    string `json:"source"`
+		Producers []struct {
+			MalID int    `json:"mal_id"`
+			Type  string `json:"type"`
+			Name  string `json:"name"`
+			URL   string `json:"url"`
+		} `json:"producers"`
+		Score     float64       `json:"score"`
+		Licensors []interface{} `json:"licensors"`
+		R18       bool          `json:"r18"`
+		Kids      bool          `json:"kids"`
+	} `json:"other"`
+	Unknown []struct {
+		MalID       int       `json:"mal_id"`
+		URL         string    `json:"url"`
+		Title       string    `json:"title"`
+		ImageURL    string    `json:"image_url"`
+		Synopsis    string    `json:"synopsis"`
+		Type        string    `json:"type"`
+		AiringStart time.Time `json:"airing_start"`
+		Episodes    int       `json:"episodes"`
+		Members     int       `json:"members"`
+		Genres      []struct {
+			MalID int    `json:"mal_id"`
+			Type  string `json:"type"`
+			Name  string `json:"name"`
+			URL   string `json:"url"`
+		} `json:"genres"`
+		Source    string `json:"source"`
+		Producers []struct {
+			MalID int    `json:"mal_id"`
+			Type  string `json:"type"`
+			Name  string `json:"name"`
+			URL   string `json:"url"`
+		} `json:"producers"`
+		Score     float64       `json:"score"`
+		Licensors []interface{} `json:"licensors"`
+		R18       bool          `json:"r18"`
+		Kids      bool          `json:"kids"`
+	} `json:"unknown"`
 }

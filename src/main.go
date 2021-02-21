@@ -18,9 +18,9 @@ func main() {
 	// Setup Discord
 	dg, _ := discordgo.New("Bot " + Config.Token)
 	// Register events
-	dg.Identify.Intents = discordgo.MakeIntent(discordgo.IntentsGuildMessages|discordgo.IntentsGuildMessageReactions|discordgo.IntentsGuildEmojis)
-	dg.AddHandler(MessageCreate)
+	dg.Identify.Intents = discordgo.MakeIntent(discordgo.IntentsGuildMessages|discordgo.IntentsGuildMessageReactions|discordgo.IntentsGuildEmojis|discordgo.IntentsDirectMessages)
 	dg.AddHandler(Ready)
+	dg.AddHandler(MessageCreate)
 	dg.AddHandler(MessageReactionAdd)
 
 	// Register commands

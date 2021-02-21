@@ -131,13 +131,13 @@ func Schedule(ctx *Context) {
 			ID: m.ID,
 			Channel: m.ChannelID,
 		})
-		// Delete message
-		err = ctx.Session.ChannelMessageDelete(m.ChannelID, m.ID)
 		ctx.SendErr(err)
 
 		AddShowToDatabase(&DBShow{
 			MalID: shows.Results[res-1].MalID,
 			Title: shows.Results[res-1].Title,
+			ImageURL: shows.Results[res-1].ImageURL,
+			AlreadySent: false,
 		}, ctx.Msg.Author.ID)
 		break
 	case "li":

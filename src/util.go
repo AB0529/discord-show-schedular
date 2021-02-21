@@ -149,7 +149,7 @@ func (ctx *Context) FindCommandFlag() ([]*Flag, error) {
 	}
 
 	if len(foundFlags) <= 0 {
-		return nil, errors.New("invalid flags provided")
+		return nil, errors.New("no flags found")
 	}
 
 	return foundFlags, nil
@@ -246,7 +246,7 @@ func (collector *MessageCollector) New(ctx *Context) error {
 func NewDB() *Database {
 	// Make sure file exists, if not create it
 	if _, err := os.Stat("../users.yml"); err != nil {
-		ioutil.WriteFile("../users.yml", []byte{}, 666)
+		ioutil.WriteFile("../users.yml", []byte{}, 0777)
 	}
 	// Open the database for reading
 	db := &Database{}
@@ -260,7 +260,7 @@ func NewDB() *Database {
 func (db *Database) Write() {
 	d, err := yaml.Marshal(&db)
 	Die(err)
-	err = ioutil.WriteFile("../users.yml", d, 666)
+	err = ioutil.WriteFile("../users.yml", d, 0777)
 	Die(err)
 }
 // AddShowToDatabase adds a show to the database
