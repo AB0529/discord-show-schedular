@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"strconv"
 	"time"
 )
 
@@ -39,8 +40,35 @@ func Schedule(ctx *Context) {
 			ctx.SendErr(err)
 			return
 		}
-		m := ctx.Send("Loading...")
-		ctx.Edit(m, fmt.Sprintf("Title: %s\nDesc: %s", shows.Results[0].Title, shows.Results[0].Synopsis))
+		m := ctx.NewEmbed("Loading...")
+		// List 1-5 shows
+		l := 1
+		msg := ""
+		if len(shows.Results) > 1 {
+			l = 5
+		}
+		// Format the results
+		for i := 0; i < l; i++ {
+			msg += fmt.Sprintf("%d) %s\n", i+1, shows.Results[i].Title)
+		}
+		// Get the user input
+		m = ctx.EditEmbed(m, fmt.Sprintf("Results for `%s`:\n```css\n%s\n```\n*Type the number of the show you want; you have 10 seconds*", show, msg))
+		resMsg, err := ctx.GetUserResponse(m, 10*time.Second)
+		// Handle deadline exceeded
+		if resMsg == nil {
+			err := ctx.Session.ChannelMessageDelete(m.ChannelID, m.ID)
+			ctx.SendErr(err)
+			return
+		}
+		// Return the selected output
+		res, err := strconv.Atoi(resMsg.Content)
+		if err != nil {
+			ctx.SendErr(err)
+			return
+		}
+		ctx.EditEmbed(m, "You chose: " + shows.Results[res-1].Title)
+
+
 	} else {
 		ctx.NewEmbed(":x: | What **anime** do you want to add?")
 	}

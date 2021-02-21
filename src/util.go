@@ -91,6 +91,7 @@ func (ctx *Context) NewEmbed(content string) *discordgo.Message {
 		Embed: &discordgo.MessageEmbed{
 			Color:       rand.Intn(10000000),
 			Description: content,
+			Footer: &discordgo.MessageEmbedFooter{IconURL: ctx.Msg.Author.AvatarURL("512x512")},
 		},
 	})
 	Warn(err)
@@ -128,6 +129,7 @@ func (ctx *Context) EditEmbed(m *discordgo.Message, content string) *discordgo.M
 		Embed: &discordgo.MessageEmbed{
 			Color:       rand.Intn(10000000),
 			Description: content,
+			Footer: &discordgo.MessageEmbedFooter{IconURL: ctx.Msg.Author.AvatarURL("512x512")},
 		},
 		ID: m.ID,
 		Channel: ctx.Msg.ChannelID,
@@ -212,8 +214,6 @@ func (ctx *Context) GetUserResponse(m *discordgo.Message, timeout time.Duration)
 				goto sel
 			}
 		case <-c.Done():
-			ctx.Edit(m, c.Err().Error())
+			return nil, c.Err()
 	}
-
-	return nil, c.Err()
 }
