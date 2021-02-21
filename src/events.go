@@ -7,6 +7,8 @@ import (
 	"github.com/bwmarrin/discordgo"
 )
 
+var LastMessage = make(chan *discordgo.Message)
+
 // MessageCreate the function which handles message events
 func MessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 	// Ignore bots
@@ -18,18 +20,22 @@ func MessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 	msg := strings.Split(strings.ToLower(m.Message.Content)[1:], " ")
 
 	if len(msg) <= 0 {
+		// Send message to LastMessage channel
+		go func() { LastMessage <- m.Message }()
 		return
 	}
 	c := msg[0]
 	// Find the command with the matching name alias and run it
 	cmd, ok := Commands[c]
 	if !ok {
+		go func() { LastMessage <- m.Message }()
 		return
 	}
 	ctx := &Context{
 		Session: s,
 		Msg:     m,
 		Command: cmd,
+		LastMessage: LastMessage,
 	}
 	cmd.Handler(ctx)
 }

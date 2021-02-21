@@ -1,6 +1,9 @@
 package main
 
-import "fmt"
+import (
+	"fmt"
+	"time"
+)
 
 // Command the representation of a bot command
 type Command struct {
@@ -14,7 +17,12 @@ type Command struct {
 
 // Ping command which returns a message
 func Ping(ctx *Context) {
-	ctx.NewEmbed("Pong nigga")
+	m := ctx.NewEmbed("Pinging....")
+	ts, _ := m.Timestamp.Parse()
+	now := time.Now()
+	ctx.EditEmbed(m, fmt.Sprintf("🏓 | **Pong my ping**\n\n💗 | **Heartbeat**: `%1.fms`\n ⏱️| **Message Delay**: `%1.fms`",
+		float64(ctx.Session.HeartbeatLatency().Milliseconds()),
+		float64(now.Sub(ts).Milliseconds())))
 }
 
 // Schedule hub command which handles actions for the user's schedule

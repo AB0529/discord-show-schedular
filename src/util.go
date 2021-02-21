@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -25,13 +26,8 @@ var (
 	Yellow = color.Yellow
 )
 
-// StoredShows the shows stored
-type StoredShows struct {
-	Title string `json:"title"`
-	MalID int    `json:"malID"`
-}
 
-// Show repersentation of a show query response
+// Show representation of a show query response
 type Show struct {
 	RequestHash        string `json:"request_hash"`
 	RequestCached      bool   `json:"request_cached"`
@@ -52,25 +48,6 @@ type Show struct {
 		Rated     string    `json:"rated"`
 	} `json:"results"`
 	LastPage int `json:"last_page"`
-}
-
-// Episode response type of episode request
-type Episode struct {
-	RequestHash        string `json:"request_hash"`
-	RequestCached      bool   `json:"request_cached"`
-	RequestCacheExpiry int    `json:"request_cache_expiry"`
-	EpisodesLastPage   int    `json:"episodes_last_page"`
-	Episodes           []struct {
-		EpisodeID     int       `json:"episode_id"`
-		Title         string    `json:"title"`
-		TitleJapanese string    `json:"title_japanese"`
-		TitleRomanji  string    `json:"title_romanji"`
-		Aired         time.Time `json:"aired"`
-		Filler        bool      `json:"filler"`
-		Recap         bool      `json:"recap"`
-		VideoURL      string    `json:"video_url"`
-		ForumURL      string    `json:"forum_url"`
-	} `json:"episodes"`
 }
 
 // Warn logs warning to stdout
@@ -153,7 +130,7 @@ func (ctx *Context) EditEmbed(m *discordgo.Message, content string) *discordgo.M
 			Description: content,
 		},
 		ID: m.ID,
-		Channel: m.ChannelID,
+		Channel: ctx.Msg.ChannelID,
 	})
 	Warn(err)
 	return m
@@ -217,4 +194,26 @@ func FindShows(query string) (*Show, error) {
 	}
 
 	return nil, errors.New("could not find show")
+}
+
+// GetUserResponse gets the user response or timeout in n seconds
+func (ctx *Context) GetUserResponse(m *discordgo.Message, timeout time.Duration) (*discordgo.Message, error) {
+	// Create timeout context
+	c, cancel := context.WithTimeout(context.Background(), timeout)
+	defer cancel()
+
+	sel:
+	select {
+		case msg := <- ctx.LastMessage:
+			// Make sure message received is not before the command
+			if msg.Timestamp >= m.Timestamp {
+				return msg, nil
+			} else {
+				goto sel
+			}
+		case <-c.Done():
+			ctx.Edit(m, c.Err().Error())
+	}
+
+	return nil, c.Err()
 }

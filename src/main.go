@@ -13,6 +13,7 @@ type Context struct {
 	Session *discordgo.Session
 	Msg     *discordgo.MessageCreate
 	Command *Command
+	LastMessage chan *discordgo.Message
 }
 
 // Commands all the commands for the bot
