@@ -5,7 +5,6 @@ import (
 	"github.com/bwmarrin/discordgo"
 	"math/rand"
 	"strconv"
-	"strings"
 	"time"
 )
 
@@ -21,37 +20,38 @@ func Ping(ctx *Context) {
 
 // Test command used for testing
 func Test(ctx *Context) {
-	ctx.Send("Say something nigga")
-	collector := &MessageCollector{
-		MessagesCollected: []*discordgo.Message{},
-		Filter:            func(ctx *Context, m *discordgo.Message) bool {
-			return m.Timestamp >= ctx.Msg.Timestamp
-		},
-		EndAfterOne:       false,
-		Timeout:           time.Second * 5,
-		UseTimeout:        true,
-	}
-	err := collector.New(ctx)
+	flags, err := ctx.FindCommandFlag()
 	if err != nil {
 		ctx.SendErr(err)
 		return
 	}
 
-	ctx.Send(fmt.Sprintf("You said %d many things", len(collector.MessagesCollected)))
-
+	for _, flag := range flags {
+		ctx.Send(fmt.Sprintf("Name: %s\nValue: %s", flag.Name, flag.Value))
+	}
 
 }
 
 // Schedule hub command which handles actions for the user's schedule
+// TODO: make a better flag system
 func Schedule(ctx *Context) {
-	args := ctx.FindCommandFlag()
-	if args == nil {
+	flags, err := ctx.FindCommandFlag()
+	if err != nil {
 		ctx.SendCommandHelp()
 		return
 	}
-	// Add
-	if _, ok := args["add"]; ok {
-		show := args["add"]
+	if flags[0].RequiresValue && flags[0].Value == "" {
+		ctx.SendErr("no value provided for the flag " + flags[0].Name)
+		return
+	}
+
+	db := *NewDB()
+
+	// Get the first flag
+	switch flags[0].Name {
+	case "add":
+		show := flags[0].Value
+
 		shows, err := FindShows(show)
 		if err != nil {
 			ctx.SendErr(err)
@@ -73,7 +73,12 @@ func Schedule(ctx *Context) {
 		collector := &MessageCollector{
 			MessagesCollected: []*discordgo.Message{},
 			Filter: func(ctx *Context, m *discordgo.Message) bool {
-				if _, err := strconv.Atoi(m.Content); m.Author.ID != ctx.Msg.Author.ID || err != nil {
+				j, err := strconv.Atoi(m.Content)
+
+				if m.Author.ID != ctx.Msg.Author.ID || err != nil {
+					return false
+				}
+				if j > l {
 					return false
 				}
 
@@ -107,7 +112,7 @@ func Schedule(ctx *Context) {
 			ctx.SendErr(err)
 			return
 		}
-		db := *NewDB()
+
 		// Check for duplicates
 		for _, show := range db[ctx.Msg.Author.ID] {
 			if show.MalID == shows.Results[res-1].MalID {
@@ -134,10 +139,10 @@ func Schedule(ctx *Context) {
 			MalID: shows.Results[res-1].MalID,
 			Title: shows.Results[res-1].Title,
 		}, ctx.Msg.Author.ID)
-	}
-	// List
-	if strings.Split(ctx.Msg.Content, " ")[1] == "list" {
-		db := *NewDB()
+		break
+	case "li":
+		fallthrough
+	case "list":
 		// Loop through users shows
 		shows := db[ctx.Msg.Author.ID]
 		if len(shows) < 1 {
@@ -149,5 +154,53 @@ func Schedule(ctx *Context) {
 			msg += fmt.Sprintf("```css\n%d) %s\n```", i+1, show.Title)
 		}
 		ctx.NewEmbed(fmt.Sprintf("📚 | **%s**, you have `%d` show(s)!\n%s", ctx.Msg.Author.Username, len(shows), msg))
+		break
+	case "rm":
+		fallthrough
+	case "remove":
+		shows := db[ctx.Msg.Author.ID]
+		if len(shows) < 1 {
+			ctx.SendErr(fmt.Sprintf("You have no shows, add them with %s%s add ShowName", Config.Prefix, ctx.Command.Name))
+			return
+		}
+		msg := ""
+		for i, show := range shows {
+			msg += fmt.Sprintf("%d) %s\n", i+1, show.Title)
+		}
+		m := ctx.NewEmbed(fmt.Sprintf("📚 | **%s**, you have `%d` show(s)!\n```css\n%s\nc. Cancel\n```", ctx.Msg.Author.Username, len(shows), msg))
+		collector := &MessageCollector{
+			MessagesCollected: []*discordgo.Message{},
+			Filter: func(ctx *Context, m *discordgo.Message) bool {
+				i, err := strconv.Atoi(m.Content)
+
+				if m.Author.ID != ctx.Msg.Author.ID || err != nil {
+					return false
+				}
+				if i > len(db[ctx.Msg.Author.ID]) {
+					return false
+				}
+
+				return true
+			},
+			EndAfterOne:       true,
+			Timeout:           time.Second * 10,
+			UseTimeout:        true,
+		}
+		err := collector.New(ctx)
+		if err != nil {
+			// Delete message
+			err := ctx.Session.ChannelMessageDelete(m.ChannelID, m.ID)
+			ctx.SendErr(err)
+			return
+		}
+		resp, _ := strconv.Atoi(collector.MessagesCollected[0].Content)
+
+		// Remove from DB
+		ctx.NewEmbed(fmt.Sprintf("🚫 | **Removed** `%s` from your schedule!", db[ctx.Msg.Author.ID][resp-1].Title))
+
+		db[ctx.Msg.Author.ID] = append(db[ctx.Msg.Author.ID][:resp-1], db[ctx.Msg.Author.ID][resp:]...)
+		db.Write()
+
+		break
 	}
 }

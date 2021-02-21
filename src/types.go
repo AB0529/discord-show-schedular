@@ -22,6 +22,14 @@ type Context struct {
 	LastReaction chan *discordgo.MessageReaction
 }
 
+// Flag a command flag
+type Flag struct {
+	Name string
+	Value string
+	RequiresValue bool
+	Exists bool
+}
+
 // Command the representation of a bot command
 type Command struct {
 	Name    string
@@ -29,6 +37,7 @@ type Command struct {
 	Example []string
 	Desc    []string
 	Handler func(*Context)
+	Flags []*Flag
 }
 
 // MessageCollector waits for user response

@@ -116,15 +116,43 @@ func (ctx *Context) EditEmbed(m *discordgo.Message, content string) *discordgo.M
 }
 
 // FindCommandFlag finds a flag and the value in a command string
-func (ctx *Context) FindCommandFlag() map[string]string {
-	// Find the flags
-	flags := strings.Split(strings.ToLower(ctx.Msg.Message.Content), " ")[1:]
-	// Make sure flags is not empty
-	if len(flags) <= 0 {
-		return nil
+func (ctx *Context) FindCommandFlag() ([]*Flag, error) {
+	var foundFlags []*Flag
+
+	// Arguments separated by a space
+	args := strings.Split(strings.ToLower(ctx.Msg.Message.Content), " ")[1:]
+	if len(args) <= 0 {
+		return nil, errors.New("no flags provided")
 	}
 
-	return map[string]string{flags[0]: strings.Join(flags[1:], " ")}
+	// Find the flag with the same name as args
+	for i, arg := range args {
+		for _, flag := range ctx.Command.Flags {
+			if arg == flag.Name {
+				// Add flag without required value
+				if !flag.RequiresValue {
+					flag.Exists = true
+					foundFlags = append(foundFlags, flag)
+				}
+				// Add flag with value
+				if flag.RequiresValue {
+					// Pass next element as value for flag
+					if i+1 > len(args) {
+						return nil, fmt.Errorf("no value found for flag %s", flag.Name)
+					}
+					flag.Value = strings.Join(args[i+1:], " ")
+					flag.Exists = true
+					foundFlags = append(foundFlags, flag)
+				}
+			}
+		}
+	}
+
+	if len(foundFlags) <= 0 {
+		return nil, errors.New("invalid flags provided")
+	}
+
+	return foundFlags, nil
 }
 
 // SendCommandHelp properly formats and shows the help page of a command

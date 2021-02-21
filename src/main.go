@@ -36,8 +36,9 @@ func main() {
 			Name:    "schedule",
 			Aliases: []string{"sched", "sc"},
 			Example: []string{Config.Prefix + "schedule <flag> <value>", Config.Prefix + "schedule add Bleach"},
-			Desc:    []string{"Controls the user's schedule", "Flag 'add': adds an anime to your schedule"},
+			Desc:    []string{"Controls the user's schedule", "Flag 'add': adds an anime to your schedule", "Flag 'list': lists your schedule", "Flag 'remove': removes an anime to your schedule"},
 			Handler: Schedule,
+			Flags: []*Flag{ { Name: "add", RequiresValue: true }, { Name: "list" }, { Name: "li" }, { Name: "remove" }, { Name: "rm" } },
 		},
 		{
 			Name:    "test",
@@ -45,6 +46,7 @@ func main() {
 			Example: []string{Config.Prefix + "test <flag> <value>"},
 			Desc:    []string{"Command used for testing"},
 			Handler: Test,
+			Flags: []*Flag{ { Name: "add", RequiresValue: true }, { Name: "list" } },
 		},
 	})
 
