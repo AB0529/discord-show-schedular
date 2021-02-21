@@ -38,15 +38,13 @@ func main() {
 			Example: []string{Config.Prefix + "schedule <flag> <value>", Config.Prefix + "schedule add Bleach"},
 			Desc:    []string{"Controls the user's schedule", "Flag 'add': adds an anime to your schedule"},
 			Handler: Schedule,
-			Flags:   []string{"add", "remove", "list"},
 		},
 		{
 			Name:    "test",
-			Aliases: []string{"t"},
+			Aliases: []string{},
 			Example: []string{Config.Prefix + "test <flag> <value>"},
 			Desc:    []string{"Command used for testing"},
 			Handler: Test,
-			Flags:   []string{},
 		},
 	})
 

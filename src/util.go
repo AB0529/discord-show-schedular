@@ -7,6 +7,8 @@ import (
 	"fmt"
 	"github.com/bwmarrin/discordgo"
 	"github.com/gookit/color"
+	_ "github.com/mattn/go-sqlite3"
+	"gopkg.in/yaml.v3"
 	"io/ioutil"
 	"math/rand"
 	"net/http"
@@ -66,7 +68,7 @@ func (ctx *Context) NewEmbed(content string) *discordgo.Message {
 		Embed: &discordgo.MessageEmbed{
 			Color:       rand.Intn(10000000),
 			Description: content,
-			Footer: &discordgo.MessageEmbedFooter{IconURL: ctx.Msg.Author.AvatarURL("512x512")},
+			Footer: &discordgo.MessageEmbedFooter{IconURL: ctx.Msg.Author.AvatarURL("")},
 		},
 	})
 	Warn(err)
@@ -210,4 +212,42 @@ func (collector *MessageCollector) New(ctx *Context) error {
 	}
 
 	return nil
+}
+
+// NewDB opens the database
+func NewDB() *Database {
+	// Make sure file exists, if not create it
+	if _, err := os.Stat("../users.yml"); err != nil {
+		ioutil.WriteFile("../users.yml", []byte{}, 666)
+	}
+	// Open the database for reading
+	db := &Database{}
+	d, _ := ioutil.ReadFile("../users.yml")
+	err := yaml.Unmarshal(d, &db)
+	Die(err)
+
+	return db
+}
+// Write writes to the database
+func (db *Database) Write() {
+	d, err := yaml.Marshal(&db)
+	Die(err)
+	err = ioutil.WriteFile("../users.yml", d, 666)
+	Die(err)
+}
+// AddShowToDatabase adds a show to the database
+func AddShowToDatabase(show *DBShow, userID string) {
+	db := *NewDB()
+
+	// Attempt to find user, if not found add them
+	if _, ok := db[userID]; !ok {
+		db[userID] = []*DBShow{show}
+		db.Write()
+		return
+	}
+
+	// Add to user shows
+	db[userID] = append(db[userID], show)
+	db.Write()
+	return
 }

@@ -29,7 +29,6 @@ type Command struct {
 	Example []string
 	Desc    []string
 	Handler func(*Context)
-	Flags   []string
 }
 
 // MessageCollector waits for user response
@@ -51,6 +50,15 @@ type ReactionCollector struct {
 	UseTimeout bool
 	Done chan bool
 }
+
+
+// DBShow the show in the database
+type DBShow struct{
+	MalID int
+	Title string
+}
+// Database the users database
+type Database map[string][]*DBShow
 
 // Show representation of a show query response
 type Show struct {

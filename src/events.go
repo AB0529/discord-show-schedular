@@ -25,11 +25,16 @@ func MessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 		go func() { LastMessage <- m.Message }()
 		return
 	}
+
 	c := msg[0]
 	// Find the command with the matching name alias and run it
 	cmd, ok := Commands[c]
 	if !ok {
 		go func() { LastMessage <- m.Message }()
+		return
+	}
+	// Make sure message starts with prefix
+	if string(m.Message.Content[0]) != Config.Prefix {
 		return
 	}
 	ctx := &Context{
