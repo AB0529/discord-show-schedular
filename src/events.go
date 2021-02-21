@@ -94,6 +94,19 @@ func Ready(s *discordgo.Session, e *discordgo.Ready) {
 							Image: &discordgo.MessageEmbedImage{URL: show.ImageURL},
 						},
 					})
+
+					if Config.Channel != "" {
+						defaultChan, _ := s.Channel(Config.Channel)
+						_, err = s.ChannelMessageSendComplex(defaultChan.ID, &discordgo.MessageSend{
+							Embed: &discordgo.MessageEmbed{
+								Color:       rand.Intn(10000000),
+								Description: fmt.Sprintf("🔔 | Ding, ding, `%s` **new episode** aired!", show.Title),
+								Image: &discordgo.MessageEmbedImage{URL: show.ImageURL},
+							},
+						})
+						Warn(err)
+					}
+
 					Warn(err)
 					show.AlreadySent = true
 					db.Write()

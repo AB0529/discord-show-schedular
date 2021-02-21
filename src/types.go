@@ -8,9 +8,11 @@ import (
 // Conf the representation of a config file
 type Conf struct {
 	// Token the bot token
-	Token string `json:"token"`
+	Token string
 	// Prefix the prefix used to issue commands to the bot
-	Prefix string `json:"prefix"`
+	Prefix string
+	// Channel the channel to post all airings
+	Channel string
 }
 
 // Context the context for the command

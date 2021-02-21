@@ -14,7 +14,6 @@ var Commands = make(map[string]*Command)
 func main() {
 	// Load config
 	Config = NewConfig("../config.yml")
-	Config = NewConfig("../config.yml")
 	// Setup Discord
 	dg, _ := discordgo.New("Bot " + Config.Token)
 	// Register events
