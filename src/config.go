@@ -7,14 +7,6 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-// Conf the representation of a config file
-type Conf struct {
-	// Token the bot token
-	Token string `json:"token"`
-	// Prefix the prefix used to issue commands to the bot
-	Prefix string `json:"prefix"`
-}
-
 // Config the global config variable
 var Config *Conf
 

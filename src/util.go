@@ -12,7 +12,6 @@ import (
 	"net/http"
 	"os"
 	"strings"
-	"time"
 )
 
 var (
@@ -25,30 +24,6 @@ var (
 	// Yellow color yellow
 	Yellow = color.Yellow
 )
-
-
-// Show representation of a show query response
-type Show struct {
-	RequestHash        string `json:"request_hash"`
-	RequestCached      bool   `json:"request_cached"`
-	RequestCacheExpiry int    `json:"request_cache_expiry"`
-	Results            []struct {
-		MalID     int       `json:"mal_id"`
-		URL       string    `json:"url"`
-		ImageURL  string    `json:"image_url"`
-		Title     string    `json:"title"`
-		Airing    bool      `json:"airing"`
-		Synopsis  string    `json:"synopsis"`
-		Type      string    `json:"type"`
-		Episodes  int       `json:"episodes"`
-		Score     float64   `json:"score"`
-		StartDate time.Time `json:"start_date"`
-		EndDate   time.Time `json:"end_date"`
-		Members   int       `json:"members"`
-		Rated     string    `json:"rated"`
-	} `json:"results"`
-	LastPage int `json:"last_page"`
-}
 
 // Warn logs warning to stdout
 func Warn(err interface{}) {
@@ -198,22 +173,41 @@ func FindShows(query string) (*Show, error) {
 	return nil, errors.New("could not find show")
 }
 
-// GetUserResponse gets the user response or timeout in n seconds
-func (ctx *Context) GetUserResponse(m *discordgo.Message, timeout time.Duration) (*discordgo.Message, error) {
-	// Create timeout context
-	c, cancel := context.WithTimeout(context.Background(), timeout)
-	defer cancel()
+// New collects user messages
+// TODO: implement done channel
+// TODO: implement reaction collector
+func (collector *MessageCollector) New(ctx *Context) error {
+	// Use timeout instead of channel
+	if collector.UseTimeout {
+		// Create timeout context
+		c, cancel := context.WithTimeout(context.Background(), collector.Timeout)
+		defer cancel()
 
-	sel:
-	select {
-		case msg := <- ctx.LastMessage:
-			// Make sure message received is not before the command
-			if msg.Timestamp >= m.Timestamp {
-				return msg, nil
-			} else {
-				goto sel
+		sel:
+		select {
+			case msg := <-ctx.LastMessage:
+				// Cancel
+				if msg.Timestamp >= ctx.Msg.Timestamp && msg.Author.ID == ctx.Msg.Author.ID && strings.ToLower(msg.Content) == "c" {
+					return errors.New("collector canceled")
+				}
+
+				if msg.Timestamp >= ctx.Msg.Timestamp && collector.Filter(ctx, msg) {
+					if collector.EndAfterOne {
+						collector.MessagesCollected = append(collector.MessagesCollected, msg)
+						return nil
+					}
+					collector.MessagesCollected = append(collector.MessagesCollected, msg)
+					goto sel
+				} else {
+					goto sel
+				}
+			case <-c.Done():
+				if !collector.EndAfterOne {
+					return nil
+				}
+				return c.Err()
 			}
-		case <-c.Done():
-			return nil, c.Err()
 	}
+
+	return nil
 }

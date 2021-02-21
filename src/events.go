@@ -8,6 +8,7 @@ import (
 )
 
 var LastMessage = make(chan *discordgo.Message)
+var LastReaction = make(chan *discordgo.MessageReaction)
 
 // MessageCreate the function which handles message events
 func MessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
@@ -36,8 +37,14 @@ func MessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 		Msg:     m,
 		Command: cmd,
 		LastMessage: LastMessage,
+		LastReaction: LastReaction,
 	}
 	cmd.Handler(ctx)
+}
+
+// MessageReactionAdd the function which handles message reaction events
+func MessageReactionAdd(s *discordgo.Session, m *discordgo.MessageReactionAdd) {
+	go func() { LastReaction <- m.MessageReaction }()
 }
 
 // Ready the function which handles when the bot is ready

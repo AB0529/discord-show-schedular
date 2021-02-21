@@ -8,14 +8,6 @@ import (
 	"github.com/bwmarrin/discordgo"
 )
 
-// Context the context for the command
-type Context struct {
-	Session *discordgo.Session
-	Msg     *discordgo.MessageCreate
-	Command *Command
-	LastMessage chan *discordgo.Message
-}
-
 // Commands all the commands for the bot
 var Commands = make(map[string]*Command)
 
@@ -26,9 +18,10 @@ func main() {
 	// Setup Discord
 	dg, _ := discordgo.New("Bot " + Config.Token)
 	// Register events
-	dg.Identify.Intents = discordgo.MakeIntent(discordgo.IntentsGuildMessages)
+	dg.Identify.Intents = discordgo.MakeIntent(discordgo.IntentsGuildMessages|discordgo.IntentsGuildMessageReactions|discordgo.IntentsGuildEmojis)
 	dg.AddHandler(MessageCreate)
 	dg.AddHandler(Ready)
+	dg.AddHandler(MessageReactionAdd)
 
 	// Register commands
 	RegisterCommands([]*Command{
@@ -42,10 +35,18 @@ func main() {
 		{
 			Name:    "schedule",
 			Aliases: []string{"sched", "sc"},
-			Example: []string{Config.Prefix + "schedule <flag> <value>"},
-			Desc:    []string{"Controls the user's schedule"},
+			Example: []string{Config.Prefix + "schedule <flag> <value>", Config.Prefix + "schedule add Bleach"},
+			Desc:    []string{"Controls the user's schedule", "Flag 'add': adds an anime to your schedule"},
 			Handler: Schedule,
 			Flags:   []string{"add", "remove", "list"},
+		},
+		{
+			Name:    "test",
+			Aliases: []string{"t"},
+			Example: []string{Config.Prefix + "test <flag> <value>"},
+			Desc:    []string{"Command used for testing"},
+			Handler: Test,
+			Flags:   []string{},
 		},
 	})
 

@@ -2,19 +2,10 @@ package main
 
 import (
 	"fmt"
+	"github.com/bwmarrin/discordgo"
 	"strconv"
 	"time"
 )
-
-// Command the representation of a bot command
-type Command struct {
-	Name    string
-	Aliases []string
-	Example []string
-	Desc    []string
-	Handler func(*Context)
-	Flags   []string
-}
 
 // Ping command which returns a message
 func Ping(ctx *Context) {
@@ -26,11 +17,35 @@ func Ping(ctx *Context) {
 		float64(now.Sub(ts).Milliseconds())))
 }
 
+// Test command used for testing
+func Test(ctx *Context) {
+	ctx.Send("Say something nigga")
+	collector := &MessageCollector{
+		MessagesCollected: []*discordgo.Message{},
+		Filter:            func(ctx *Context, m *discordgo.Message) bool {
+			return m.Timestamp >= ctx.Msg.Timestamp
+		},
+		EndAfterOne:       false,
+		Timeout:           time.Second * 5,
+		UseTimeout:        true,
+	}
+	err := collector.New(ctx)
+	if err != nil {
+		ctx.SendErr(err)
+		return
+	}
+
+	ctx.Send(fmt.Sprintf("You said %d many things", len(collector.MessagesCollected)))
+
+
+}
+
 // Schedule hub command which handles actions for the user's schedule
 func Schedule(ctx *Context) {
 	args := ctx.FindCommandFlag()
 	if args == nil {
 		ctx.SendCommandHelp()
+		return
 	}
 	// Add
 	if args["add"] != "" {
@@ -52,14 +67,29 @@ func Schedule(ctx *Context) {
 			msg += fmt.Sprintf("%d) %s\n", i+1, shows.Results[i].Title)
 		}
 		// Get the user input
-		m = ctx.EditEmbed(m, fmt.Sprintf("Results for `%s`:\n```css\n%s\n```\n*Type the number of the show you want; you have 10 seconds*", show, msg))
-		resMsg, err := ctx.GetUserResponse(m, 10*time.Second)
-		// Handle deadline exceeded
-		if resMsg == nil {
+		m = ctx.EditEmbed(m, fmt.Sprintf("Results for `%s`:\n```css\n%s\nc) Cancel\n```\n*Type the number of the show you want; you have 10 seconds*", show, msg))
+		collector := &MessageCollector{
+			MessagesCollected: []*discordgo.Message{},
+			Filter: func(ctx *Context, m *discordgo.Message) bool {
+				if _, err := strconv.Atoi(m.Content); m.Author.ID != ctx.Msg.Author.ID || err != nil {
+					return false
+				}
+
+				return true
+			},
+			EndAfterOne:       true,
+			Timeout:           time.Second * 10,
+			UseTimeout:        true,
+		}
+		err = collector.New(ctx)
+		if err != nil {
+			// Delete message
 			err := ctx.Session.ChannelMessageDelete(m.ChannelID, m.ID)
 			ctx.SendErr(err)
 			return
 		}
+		resMsg := collector.MessagesCollected[0]
+
 		// Return the selected output
 		res, err := strconv.Atoi(resMsg.Content)
 		if err != nil {
