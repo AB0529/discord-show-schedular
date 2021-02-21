@@ -1,2 +1,4 @@
 /config.yml
 /.idea
+/users.db
+/identifier.sqlite

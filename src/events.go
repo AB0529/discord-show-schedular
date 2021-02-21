@@ -15,7 +15,12 @@ func MessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 	}
 
 	// Create new context on each message
-	c := strings.Split(strings.ToLower(m.Message.Content)[1:], " ")[0]
+	msg := strings.Split(strings.ToLower(m.Message.Content)[1:], " ")
+
+	if len(msg) <= 0 {
+		return
+	}
+	c := msg[0]
 	// Find the command with the matching name alias and run it
 	cmd, ok := Commands[c]
 	if !ok {

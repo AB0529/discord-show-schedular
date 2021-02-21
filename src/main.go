@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"os"
 	"os/signal"
 	"syscall"
@@ -22,7 +21,7 @@ var Commands = make(map[string]*Command)
 func main() {
 	// Load config
 	Config = NewConfig("../config.yml")
-	fmt.Println(Config)
+	Config = NewConfig("../config.yml")
 	// Setup Discord
 	dg, _ := discordgo.New("Bot " + Config.Token)
 	// Register events
@@ -41,7 +40,7 @@ func main() {
 		},
 		{
 			Name:    "schedule",
-			Aliases: []string{"sched"},
+			Aliases: []string{"sched", "sc"},
 			Example: []string{Config.Prefix + "schedule <flag> <value>"},
 			Desc:    []string{"Controls the user's schedule"},
 			Handler: Schedule,

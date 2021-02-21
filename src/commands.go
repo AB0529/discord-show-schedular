@@ -1,5 +1,7 @@
 package main
 
+import "fmt"
+
 // Command the representation of a bot command
 type Command struct {
 	Name    string
@@ -20,5 +22,18 @@ func Schedule(ctx *Context) {
 	args := ctx.FindCommandFlag()
 	if args == nil {
 		ctx.SendCommandHelp()
+	}
+	// Add
+	if args["add"] != "" {
+		show := args["add"]
+		shows, err := FindShows(show)
+		if err != nil {
+			ctx.SendErr(err)
+			return
+		}
+		m := ctx.Send("Loading...")
+		ctx.Edit(m, fmt.Sprintf("Title: %s\nDesc: %s", shows.Results[0].Title, shows.Results[0].Synopsis))
+	} else {
+		ctx.NewEmbed(":x: | What **anime** do you want to add?")
 	}
 }
