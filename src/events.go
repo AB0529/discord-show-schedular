@@ -88,7 +88,7 @@ func Ready(s *discordgo.Session, e *discordgo.Ready) {
 
 	// Keep track of anime schedules
 	db := NewDB()
-	l, _ :=  time.LoadLocation("America/New_York")
+	l, _ :=  time.LoadLocation("Asia/Tokyo")
 
 	for {
 		for userID, userShows := range *db {
