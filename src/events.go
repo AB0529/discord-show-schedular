@@ -3,7 +3,9 @@ package main
 import (
 	"fmt"
 	"github.com/darenliang/jikan-go"
+	"math"
 	"math/rand"
+	"strconv"
 	"strings"
 	"time"
 
@@ -65,99 +67,82 @@ func Ready(s *discordgo.Session, e *discordgo.Ready) {
 	err := s.UpdateGameStatus(0, "with yo momma")
 	Die(err)
 
+	weekdaysPrev := map[string]string{
+		"sun": "sat",
+		"mon": "sun",
+		"tue": "mon",
+		"wed": "tue",
+		"thu": "wed",
+		"fri": "thu",
+		"sat": "fri",
+	}
+
 	// Keep track of anime schedules
+	db := NewDB()
+	l, _ :=  time.LoadLocation("America/New_York")
+
 	for {
-		db := NewDB()
-		weekday := strings.ToLower(time.Now().Weekday().String())
 		for userID, userShows := range *db {
 			for _, show := range userShows {
-				// Get schedule for the week
-				schedule, _ := jikan.GetSchedule(weekday)
+				weekday := strings.ToLower(time.Now().Weekday().String())[:3]
+				anime, _ := jikan.GetAnime(show.MalID)
+				// Make sure it's still airing
+				// TODO: delete show after it's done airing
+				if !anime.Airing {
+					continue
+				}
+				// Get the day of the week, and the time from broadcast time
+				bsr := strings.Split(strings.ToLower(anime.Broadcast), " ")
+				airWeekday := bsr[0][:len(bsr)-1]
 
-				SendMsg := func() {
+				//fmt.Printf("%s : %s : %s\n", show.Title, weekday, airWeekday)
+				// Roll back a day
+				if bsr[2][:2] == "00" {
+					airWeekday = weekdaysPrev[airWeekday]
+					//fmt.Printf("Rolled back %s : %s : %s\n", show.Title, weekday, airWeekday)
+				}
+
+
+				// Check if airing at current weekday
+				if weekday == airWeekday && !show.AlreadySent {
+					// Get time duration of airing from now
+					ahStr, amStr := bsr[2][2:], bsr[2][:2]
+					ah, _ := strconv.Atoi(ahStr)
+					am, _ := strconv.Atoi(amStr)
+					h, m, _ := time.Now().In(l).Clock()
+
+					timeDurH := int(math.Abs(float64(h) - float64(ah)))
+					timeDurM := int(math.Abs(float64(m) - float64(am)))
+
+					embedToSend := &discordgo.MessageSend{
+						Embed: &discordgo.MessageEmbed{
+							Color:       rand.Intn(10000000),
+							Description: fmt.Sprintf("🔔 | Airing in **%d hours and %d mins**", timeDurH, timeDurM),
+							Footer: &discordgo.MessageEmbedFooter{Text: fmt.Sprintf("%s on %s", show.Title, weekday)},
+							Image: &discordgo.MessageEmbedImage{URL: show.ImageURL},
+						},
+					}
+
 					// DM User
 					channel, err := s.UserChannelCreate(userID)
 					Warn(err)
-					_, err = s.ChannelMessageSendComplex(channel.ID, &discordgo.MessageSend{
-						Embed: &discordgo.MessageEmbed{
-							Color:       rand.Intn(10000000),
-							Description: fmt.Sprintf("🔔 | Ding, ding, `%s` **new episode** aired!", show.Title),
-							Image: &discordgo.MessageEmbedImage{URL: show.ImageURL},
-						},
-					})
+					_, err = s.ChannelMessageSendComplex(channel.ID, embedToSend)
 
 					if Config.Channel != "" {
-						defaultChan, _ := s.Channel(Config.Channel)
-						_, err = s.ChannelMessageSendComplex(defaultChan.ID, &discordgo.MessageSend{
-							Embed: &discordgo.MessageEmbed{
-								Color:       rand.Intn(10000000),
-								Description: fmt.Sprintf("🔔 | Ding, ding, `%s` **new episode** aired!", show.Title),
-								Image: &discordgo.MessageEmbedImage{URL: show.ImageURL},
-							},
-						})
+						_, err = s.ChannelMessageSendComplex(Config.Channel, embedToSend)
 						Warn(err)
 					}
 
-					Warn(err)
 					show.AlreadySent = true
 					db.Write()
 				}
 
-
-				// Find show in schedule
-				switch weekday {
-				case "monday":
-					for _, ss := range schedule.Monday {
-						if ss.MalID == show.MalID && !show.AlreadySent {
-							SendMsg()
-						}
-					}
-				case "tuesday":
-					for _, ss := range schedule.Tuesday {
-						if ss.MalID == show.MalID && !show.AlreadySent {
-							SendMsg()
-						}
-					}
-				case "wednesday":
-					for _, ss := range schedule.Wednesday {
-						if ss.MalID == show.MalID && !show.AlreadySent {
-							SendMsg()
-						}
-					}
-				case "thursday":
-					for _, ss := range schedule.Thursday {
-						if ss.MalID == show.MalID && !show.AlreadySent {
-							SendMsg()
-						}
-					}
-				case "friday":
-					for _, ss := range schedule.Friday {
-						if ss.MalID == show.MalID && !show.AlreadySent {
-							SendMsg()
-						}
-					}
-				case "saturday":
-					for _, ss := range schedule.Saturday {
-						if ss.MalID == show.MalID && !show.AlreadySent {
-							SendMsg()
-						}
-					}
-				case "sunday":
-					for _, ss := range schedule.Sunday {
-						if ss.MalID == show.MalID && !show.AlreadySent {
-							SendMsg()
-						}
-					}
-				default:
-					show.AlreadySent = false
-					db.Write()
-				}
+				time.Sleep(time.Second * 5)
 
 			}
 		}
 
-		// Check every 10 seconds
-		time.Sleep(time.Second * 10)
+		//fmt.Println("------------------------------------------------------")
 	}
 
 }
