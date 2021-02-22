@@ -106,6 +106,12 @@ func Schedule(ctx *Context) {
 		// Make sure show is still airing before adding it
 		if !shows.Results[res-1].Airing {
 			y, mo, d := shows.Results[res-1].EndDate.Date()
+			// Show hasn't aired yet
+			if y <= 1 {
+				ctx.SendErr("show has not yet aired!")
+				return
+			}
+
 			ctx.SendErr(fmt.Sprintf("%s stopped airing on %d/%d/%d", shows.Results[res-1].Title, mo, d, y))
 			// Delete message
 			err := ctx.Session.ChannelMessageDelete(m.ChannelID, m.ID)
