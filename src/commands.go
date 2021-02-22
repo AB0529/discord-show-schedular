@@ -58,6 +58,8 @@ func Schedule(ctx *Context) {
 			return
 		}
 		m := ctx.NewEmbed("Loading...")
+		// Wait a sec
+		time.Sleep(time.Second * 1)
 		// List 1-5 shows
 		l := 1
 		msg := ""
