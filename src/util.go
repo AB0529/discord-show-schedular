@@ -184,7 +184,7 @@ func FindShows(search string) (*jikan.SearchAnime, error) {
 	// Search for show
 	query := url.Values{}
 	query.Set("q", search)
-	query.Set("type", "tv")
+	query.Set("type", "anime")
 	show, err := jikan.GetSearchAnime(query)
 	if err != nil {
 		return nil, err
