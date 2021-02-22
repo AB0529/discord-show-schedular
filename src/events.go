@@ -111,7 +111,7 @@ func Ready(s *discordgo.Session, e *discordgo.Ready) {
 					am, _ := strconv.Atoi(amStr)
 					h, m, _ := time.Now().In(l).Clock()
 
-					timeDurH := int(math.Abs(float64(h) - float64(ah)))
+					timeDurH := int(math.Abs(float64(h) - float64(ah+1)))
 					timeDurM := int(math.Abs(float64(m) - float64(am)))
 
 					embedToSend := &discordgo.MessageSend{
