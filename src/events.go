@@ -114,12 +114,13 @@ func Ready(s *discordgo.Session, e *discordgo.Ready) {
 					timeDurH := int(math.Abs(float64(h) - float64(ah+1)))
 					timeDurM := int(math.Abs(float64(m) - float64(am)))
 
+					user, _ := s.User(userID)
 					embedToSend := &discordgo.MessageSend{
 						Embed: &discordgo.MessageEmbed{
 							Color:       rand.Intn(10000000),
 							Description: fmt.Sprintf("🔔 | Airing in **%d hours and %d mins**", timeDurH, timeDurM),
-							Footer: &discordgo.MessageEmbedFooter{Text: fmt.Sprintf("%s on %s", show.Title, weekday)},
 							Image: &discordgo.MessageEmbedImage{URL: show.ImageURL},
+							Footer: &discordgo.MessageEmbedFooter{Text: fmt.Sprintf("'%s' on %s", show.Title, weekday), IconURL: user.AvatarURL("")},
 						},
 					}
 
