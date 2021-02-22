@@ -111,7 +111,7 @@ func Ready(s *discordgo.Session, e *discordgo.Ready) {
 					am, _ := strconv.Atoi(amStr)
 					h, m, _ := time.Now().In(l).Clock()
 
-					timeDurH := int(math.Abs(float64(h) - float64(ah+1)))
+					timeDurH := int(math.Abs(float64(h) - float64(ah+2)))
 					timeDurM := int(math.Abs(float64(m) - float64(am)))
 
 					user, _ := s.User(userID)
@@ -136,6 +136,8 @@ func Ready(s *discordgo.Session, e *discordgo.Ready) {
 
 					show.AlreadySent = true
 					db.Write()
+				} else {
+					show.AlreadySent = false
 				}
 
 				time.Sleep(time.Second * 5)
