@@ -70,7 +70,7 @@ func Ready(s *discordgo.Session, e *discordgo.Ready) {
 	// Keep track of anime schedules
 	for {
 		db := NewDB()
-		weekday := strings.ToLower(time.Now().Add(time.Hour * 24).Weekday().String())
+		weekday := strings.ToLower(time.Now().Weekday().String())
 		for userID, userShows := range *db {
 			for _, show := range userShows {
 				// Form http request
