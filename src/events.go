@@ -1,11 +1,9 @@
 package main
 
 import (
-	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"github.com/darenliang/jikan-go"
 	"math/rand"
-	"net/http"
 	"strings"
 	"time"
 
@@ -73,15 +71,8 @@ func Ready(s *discordgo.Session, e *discordgo.Ready) {
 		weekday := strings.ToLower(time.Now().Weekday().String())
 		for userID, userShows := range *db {
 			for _, show := range userShows {
-				// Form http request
-				resp, err := http.Get("https://api.jikan.moe/v3/schedule/" + weekday)
-				if err != nil {
-					panic(err)
-				}
-				body, _ := ioutil.ReadAll(resp.Body)
-				resp.Body.Close()
-				schedule := &AnimeSchedule{}
-				_ = json.Unmarshal(body, &schedule)
+				// Get schedule for the week
+				schedule, _ := jikan.GetSchedule(weekday)
 
 				SendMsg := func() {
 					// DM User

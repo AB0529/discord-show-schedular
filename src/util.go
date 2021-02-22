@@ -2,16 +2,15 @@ package main
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"github.com/bwmarrin/discordgo"
+	"github.com/darenliang/jikan-go"
 	"github.com/gookit/color"
-	_ "github.com/mattn/go-sqlite3"
 	"gopkg.in/yaml.v3"
 	"io/ioutil"
 	"math/rand"
-	"net/http"
+	"net/url"
 	"os"
 	"strings"
 )
@@ -181,16 +180,15 @@ func (ctx *Context) SendCommandHelp() {
 }
 
 // FindShows find anime from mal with the provided input
-func FindShows(query string) (*Show, error) {
-	// Form http request
-	resp, err := http.Get("https://api.jikan.moe/v3/search/anime?q=" + strings.Join(strings.Split(query, " "), "%20"))
+func FindShows(search string) (*jikan.SearchAnime, error) {
+	// Search for show
+	query := url.Values{}
+	query.Set("q", search)
+	query.Set("type", "tv")
+	show, err := jikan.GetSearchAnime(query)
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
-	defer resp.Body.Close()
-	body, _ := ioutil.ReadAll(resp.Body)
-	show := &Show{}
-	_ = json.Unmarshal(body, &show)
 
 	// Return the first show if only one is present
 	if len(show.Results) >= 1 {
@@ -246,7 +244,7 @@ func (collector *MessageCollector) New(ctx *Context) error {
 func NewDB() *Database {
 	// Make sure file exists, if not create it
 	if _, err := os.Stat("../users.yml"); err != nil {
-		ioutil.WriteFile("../users.yml", []byte{}, 0777)
+		_ = ioutil.WriteFile("../users.yml", []byte{}, 0777)
 	}
 	// Open the database for reading
 	db := &Database{}
