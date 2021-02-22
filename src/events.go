@@ -76,6 +76,15 @@ func Ready(s *discordgo.Session, e *discordgo.Ready) {
 		"fri": "thu",
 		"sat": "fri",
 	}
+	weekdaysAfter := map[string]string{
+		"sun": "mon",
+		"mon": "tue",
+		"tue": "wed",
+		"wed": "thu",
+		"thu": "fri",
+		"fri": "sat",
+		"sat": "sun",
+	}
 
 	// Keep track of anime schedules
 	db := NewDB()
@@ -136,8 +145,10 @@ func Ready(s *discordgo.Session, e *discordgo.Ready) {
 
 					show.AlreadySent = true
 					db.Write()
-				} else {
+				}
+				if weekday == weekdaysAfter[weekday] && show.AlreadySent {
 					show.AlreadySent = false
+					db.Write()
 				}
 
 				time.Sleep(time.Second * 5)
