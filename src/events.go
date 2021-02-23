@@ -120,12 +120,17 @@ func Ready(s *discordgo.Session, e *discordgo.Ready) {
 					am, _ := strconv.Atoi(amStr)
 					h, m, _ := time.Now().In(l).Clock()
 
-					timeDurH := ah - h
-					timeDurM := int(math.Abs(float64(am) - float64(m)))
+					timeDurH := h - ah
+					timeDurM := int(math.Abs(float64(m) - float64(am)))
 					msg := fmt.Sprintf("🔔 | Airing in **%d hours and %d mins**", timeDurH+2, timeDurM)
 
 					if timeDurH < 0 {
 						msg = fmt.Sprintf("🔔 | Aired **%d hours and %d mins** ago", int(math.Abs(float64(timeDurH+2))), timeDurM)
+					}
+
+					// Only notify if time is <= 3 hours
+					if int(math.Abs(float64(timeDurH))) > 3 {
+						continue
 					}
 
 					user, _ := s.User(userID)
@@ -156,7 +161,7 @@ func Ready(s *discordgo.Session, e *discordgo.Ready) {
 					db.Write()
 				}
 
-				time.Sleep(time.Second * 5)
+				//time.Sleep(time.Second * 5)
 
 			}
 		}
