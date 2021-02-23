@@ -128,8 +128,8 @@ func Ready(s *discordgo.Session, e *discordgo.Ready) {
 						msg = fmt.Sprintf("🔔 | Aired **%d hours and %d mins** ago", int(math.Abs(float64(timeDurH+2))), timeDurM)
 					}
 
-					// Only notify if time is <= 3 hours
-					if int(math.Abs(float64(timeDurH))) > 3 {
+					// Only notify if time is <= 5 hours
+					if int(math.Abs(float64(timeDurH))) > 5 {
 						continue
 					}
 
